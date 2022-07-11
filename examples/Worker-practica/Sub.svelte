@@ -5,7 +5,7 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col">
-      <h3>Resultado Suma {$test_1}</h3>
+      <h3>Resultado {$test_1}</h3>
     </div>
   </div>
 </div>

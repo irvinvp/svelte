@@ -1,4 +1,4 @@
-# Ejemplo de LocalStorage
+# Ejemplo de LocalStorage + HostName
 Se puede grabar datos del usuario a fin de conservalocalStorage-hostnamer el ultimo estado presentado y reusar este estado al cargar la pagina nuevamente.
 # Ejemplo funcionando
 ![localstorage](https://user-images.githubusercontent.com/10320683/179092692-74ba4e50-717a-41fd-add0-39cbabd6fcf0.gif)

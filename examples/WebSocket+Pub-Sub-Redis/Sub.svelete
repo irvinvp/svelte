@@ -1,0 +1,129 @@
+<script>
+  import { test_1, test_2, test_3, test_4 } from "./stores.js";
+  import { onDestroy, onMount } from "svelte";
+
+  onDestroy(() => {
+    worker.postMessage({ oper: "end", serial: "" });
+  });
+
+  let worker = new Worker("./worker.js");
+  worker.onmessage = function (e) {
+    console.log("worker", e.data);
+    if (e.data.type == "one_time") {
+      test_1.set(e.data.resultado);
+    }
+    if (e.data.type == "task") {
+      test_3.set(e.data.resultado);
+    }
+    if (e.data.type == "task2") {
+      test_4.set(e.data.resultado);
+    }
+  };
+  let serial = "";
+  function task(command) {
+    worker.postMessage({ oper: command, serial: serial });
+  }
+  let ws_msg;
+  let websocket;
+  function wsConnect() {
+    websocket = new WebSocket("ws://" + location.host);
+    let t = setTimeout(() => {
+      websocket.close();
+    }, 5000);
+    websocket.onopen = function (e) {
+      console.log("ws conectado");
+      try {
+        clearTimeout(t);
+      } catch (e) {}
+    };
+    websocket.onmessage = function (e) {
+      console.log("ws", e.data);
+      if (e.data.split(",")[0] == "calc") {
+        calc_ws = e.data.split(",")[1];
+      }
+    };
+    websocket.onclose = function (e) {
+      console.log("ws cerrado");
+      setTimeout(wsConnect, 5 * 1000);
+    };
+  }
+  function wsSend(msg) {
+    if (websocket) {
+      websocket.send(msg);
+    }
+  }
+  wsConnect();
+  let ws_n1 = 0,
+    ws_n2 = 0,
+    calc_ws = 0;
+</script>
+
+<div class="container-fluid">
+  <hr />
+  <h3>Ejemplo WS Calc</h3>
+  <div class="row">
+    <div class="col">
+      <p>
+        <input type="text" bind:value={ws_n1} placeholder="Numero 1" />
+        <input type="text" bind:value={ws_n2} placeholder="Numero 1" />
+        Resultado {calc_ws}
+      </p>
+      <p>
+        <button on:click={() => wsSend("suma," + ws_n1 + "," + ws_n2)}
+          >Suma</button
+        >
+        <button on:click={() => wsSend("resta," + ws_n1 + "," + ws_n2)}
+          >Resta</button
+        >
+        <button on:click={() => wsSend("multiplicacion," + ws_n1 + "," + ws_n2)}
+          >Multiplicacion</button
+        >
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <hr />
+  <h3>Ejemplo WS</h3>
+  <div class="row">
+    <div class="col">
+      <p>
+        <input type="text" bind:value={ws_msg} placeholder="Mensaje WS" />
+      </p>
+      <p>
+        <button on:click={() => wsSend(ws_msg)}>Send MSG</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <hr />
+  <h3>Ejemplo de tarea en SUB</h3>
+  <div class="row">
+    <div class="col">
+      <p>
+        <input type="text" bind:value={serial} placeholder="Serial" />
+      </p>
+      <p>last pos {$test_3}</p>
+      <p>last type {$test_4}</p>
+      <p>
+        <button on:click={() => task("run")}>Run</button>
+        <button on:click={() => task("stop")}>Stop</button>
+      </p>
+    </div>
+  </div>
+  <hr />
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <h3>Resultado {$test_1}</h3>
+    </div>
+  </div>
+</div>
+
+<style>
+</style>
